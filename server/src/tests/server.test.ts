@@ -1,11 +1,46 @@
-import { describe, expect, test } from "@jest/globals";
+import { describe, afterEach, beforeEach, test } from "@jest/globals";
+import { cwd } from "process";
+
+import type {
+  CodeAction,
+  CompletionList,
+  FullDocumentDiagnosticReport,
+  Hover,
+} from "vscode-languageserver";
+
+import { LanguageServerWrapper } from "./language-server-wrapper";
+
+let languageServer: LanguageServerWrapper; const init = async () => {
+  await languageServer.request("initialize", {
+    rootUri: "file:///home/user/project",
+    capabilities: {}
+  });
+};
+
+const documentVersion = new Map<string, number>();
+const defaultFile = "file:///home/user/project/file.sol";
+const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 
 describe("lsp", () => {
+  beforeEach(() => {
+    languageServer = new LanguageServerWrapper(
+      "cargo",
+      ["run", "--quiet", "--manifest-path", `${cwd()}/../lsp_server/Cargo.toml`],
+      true,
+    );
+    languageServer.start();
+  });
 
-  test("can add 1 and 2", async () => {
-    const sum = 1 + 2;
-    expect(sum).toBe(3);
 
-  })
+  afterEach(() => {
+    languageServer.stop();
+  });
+
+
+  test("initialization-works", async () => {
+    await init();
+  });
+
 
 });
