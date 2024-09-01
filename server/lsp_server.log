@@ -1,0 +1,1 @@
+[00:00:00.005] (205af8f40) INFO   didSave caught : DidSaveTextDocumentParams { text_document: TextDocumentIdentifier { uri: Url { scheme: "file", cannot_be_a_base: false, username: "", password: None, host: None, port: None, path: "/home/user/project/file.sol", query: None, fragment: None } }, text: None }

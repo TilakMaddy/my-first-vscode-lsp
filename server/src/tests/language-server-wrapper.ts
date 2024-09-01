@@ -7,6 +7,7 @@ class LanguageServerWrapper {
   public process: ChildProcess | undefined;
   private requestId: number = 0;
   public requestHandlers: Map<number, (value: object) => void> = new Map();
+  public pendingDiagnosticResponses: Array<(value: object) => void> = [];
 
   constructor(
     public readonly command: string,
@@ -73,8 +74,16 @@ class LanguageServerWrapper {
           }
           this.requestHandlers.get(message.id)?.(message.result);
           this.requestHandlers.delete(message.id);
-        } else if (this.verbose) {
-          console.warn(JSON.stringify(message, null, 2));
+        } else {
+          if (this.pendingDiagnosticResponses?.length > 0) {
+            const response = this.pendingDiagnosticResponses?.[0];
+            response(message);
+            if (this.verbose) {
+              console.log(`Rsolving diagnostic responses ${JSON.stringify(message, null, 2)}`);
+            }
+          } else {
+            if (this.verbose) console.warn(JSON.stringify(message, null, 2));
+          }
         }
 
         // Reset buffer after every reading a message
@@ -126,6 +135,17 @@ class LanguageServerWrapper {
       this.requestHandlers.set(this.requestId, resolve);
     });
 
+  }
+
+  publishedDiagnostics() {
+    if (!this.process || !this.process.stdin) {
+      throw new Error("Langauge server is not running");
+    }
+
+
+    return new Promise((resolve) => {
+      this.pendingDiagnosticResponses.push(resolve);
+    });
   }
 
 }

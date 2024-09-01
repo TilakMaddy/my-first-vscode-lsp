@@ -22,6 +22,13 @@ const defaultFile = "file:///home/user/project/file.sol";
 const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 
+const didSave = (uri: string = defaultFile) => {
+  languageServer.notify("textDocument/didSave", {
+    textDocument: { uri }
+  });
+}
+
+
 describe("lsp", () => {
   beforeEach(() => {
     languageServer = new LanguageServerWrapper(
@@ -42,5 +49,12 @@ describe("lsp", () => {
     await init();
   });
 
+
+  test("didSave notification to lsp works", async () => {
+    await init();
+    didSave();
+    const diagnostics = await languageServer.publishedDiagnostics();
+    console.log(diagnostics);
+  });
 
 });
